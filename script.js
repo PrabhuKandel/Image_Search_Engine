@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  let accessKey = "MkbL9EpAa_U1QPzBH-LwXH5vfB1n0WGDzUEUXZ5ABh0";
+  let accessKey = ""; // accessKey = "YourAccessKey"
   const searchButton = document.querySelector(".search-button");
   const showMore = document.querySelector(".show-more");
   const searchBox = document.getElementById("search-box");
