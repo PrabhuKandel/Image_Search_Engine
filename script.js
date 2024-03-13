@@ -1,39 +1,91 @@
 document.addEventListener("DOMContentLoaded", function () {
-  let accessKey = ""; // accessKey = "YourAccessKey"
+  let accessKey = "OHObcEnDxKcftuYnTp0qJ5mZ3ErMg39uzaQaw5UBBJ8JPBMjL0OXnkWw"; // accessKey = "YourAccessKey"
   const searchButton = document.querySelector(".search-button");
   const showMore = document.querySelector(".show-more");
   const searchBox = document.getElementById("search-box");
   const resultContainer = document.getElementById("result-container");
-  const voiceIcon = document.getElementById("voice-icon");
 
   let page = 1;
-  async function imageSearch(text = "") {
+  let perPage = 15;
+  let temp = "";
+
+  async function imageSearch() {
     let keyword = searchBox.value;
 
-    if (text) {
-      keyword = text;
-    }
-    console.log(keyword);
-    const url = `https://api.unsplash.com/search/collections?page=${page}&query=${keyword}&client_id=${accessKey}`;
-    const response = await fetch(url);
+    const url = `https://api.pexels.com/v1/search?query=${keyword}&page=${page}&per_page=${perPage}`;
+    const response = await fetch(url, {
+      headers: { Authorization: accessKey },
+    });
+
     const data = await response.json();
-    const results = data.results;
-    console.log(results);
-    if (page === 1) {
-      resultContainer.innerHTML = "";
+
+    console.log(data);
+
+    const results = data.photos;
+    //if new keyword then remove previous data
+
+    if (temp != keyword) {
+      console.log(temp, keyword);
+      if (document.querySelector(".result-content")) {
+        resultContainer.innerHTML = "";
+      }
     }
+    temp = keyword;
 
     results.forEach((element) => {
+      const resultContent = document.createElement("div");
+      resultContent.classList.add("result-content");
+      resultContainer.appendChild(resultContent);
+      //create image info tag
+      const resultInfo = document.createElement("div");
+      resultInfo.classList.add("result-info");
+      resultContent.appendChild(resultInfo);
+
+      resultContent.classList.add("result-content");
+      //create image tag
       const image = document.createElement("img");
-      const imageLink = element.links.self;
-      const imageSrc = element.cover_photo.urls.small;
+      const imageLink = element.url;
+      const imageSrc = element.src.large;
 
       image.src = imageSrc;
 
-      resultContainer.appendChild(image);
+      resultContent.appendChild(image);
+
+      // anchor for download icon
+      const anchorTagDownload = document.createElement("a");
+      anchorTagDownload.setAttribute("target", "_blank");
+      anchorTagDownload.href = element.url;
+      resultInfo.appendChild(anchorTagDownload);
+
+      //download icon
+      let downloadIcon = document.createElement("i");
+      downloadIcon.classList.add("fa-solid", "fa-eye");
+      anchorTagDownload.appendChild(downloadIcon);
+      //anchor tag
+      const anchorTagLink = document.createElement("a");
+      anchorTagLink.setAttribute("target", "_blank");
+      anchorTagLink.href = element.photographer_url;
+      resultInfo.appendChild(anchorTagLink);
+
+      //create camera container
+      const cameraContainer = document.createElement("div");
+      cameraContainer.classList.add("camera-container");
+      anchorTagLink.appendChild(cameraContainer);
+
+      //create camera icon and add in info
+      const cameraIcon = document.createElement("i");
+      cameraIcon.classList.add("fa-solid", "fa-camera");
+      cameraContainer.appendChild(cameraIcon);
+
+      //paragraph for photographer
+      const photographerName = document.createElement("p");
+      photographerName.classList.add("photographer-name");
+      photographerName.innerText = element.photographer;
+      cameraContainer.appendChild(photographerName);
     });
     showMore.style.display = "block";
   }
+
   //On mouse click
   searchButton.addEventListener("click", function (e) {
     e.preventDefault();
@@ -49,38 +101,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   showMore.addEventListener("click", function () {
     page++;
-    console.log(page);
     imageSearch();
-  });
-
-  // on voice icon click event
-  voiceIcon.addEventListener("click", function () {
-    if ("SpeechRecognition" in window || "webkitSpeechRecognition" in window) {
-      // Create a new instance of SpeechRecognition
-      const recognition = new (window.SpeechRecognition ||
-        window.webkitSpeechRecognition)();
-
-      recognition.lang = "en-US"; // Set language to US English
-      recognition.interimResults = true; // Show intermediate result also
-
-      //Recording starts here
-      recognition.start();
-
-      // Add event listener for the 'result' event
-      recognition.onresult = function (event) {
-        console.log(event);
-        const transcript = event.results[0][0].transcript;
-        searchBox.value = transcript;
-        imageSearch(transcript);
-        // Output the transcript to the console
-        console.log("Transcript:", transcript);
-      };
-
-      // Add event listener for the 'error' event
-      recognition.onerror = function (event) {
-        // Output the error to the console
-        console.error("Speech recognition error:", event.error);
-      };
-    }
   });
 });
